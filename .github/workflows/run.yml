@@ -16,10 +16,11 @@ jobs:
 
       - name: Install Oracle Cloud CLI
         run: |
-          bash -c "$(curl -L https://githubusercontent.com)" -- --accept-all-defaults || true
           mkdir -p ~/.oci
           echo "Installing OCI CLI via pip..."
           pip install oci-cli
+          echo "Adding OCI CLI to path..."
+          echo "$HOME/.local/bin" >> $GITHUB_PATH
 
       - name: Setup OCI Credentials
         run: |
@@ -44,6 +45,7 @@ jobs:
 
       - name: Attempt to Launch Instance
         run: |
+          export PATH=$PATH:$HOME/.local/bin
           oci compute instance launch \
             --compartment-id "${{ secrets.OCI_COMPARTMENT_ID }}" \
             --availability-domain "IAD-AD-1" \
@@ -54,3 +56,4 @@ jobs:
             --subnet-id "${{ secrets.OCI_SUBNET_ID }}" \
             --assign-public-ip true \
             --ssh-authorized-keys-file ~/public_key.pub
+

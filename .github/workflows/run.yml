@@ -38,10 +38,9 @@ jobs:
           
           chmod 600 ~/.oci/config
 
-      - name: Create Configuration Files
+      - name: Create Temporary SSH Key File
         run: |
           echo "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIDpE7nUvO7u/pU9wI6x8I1oB5N7f6YfB7nUvO7u/pU9w oci-automation-key" > ~/public_key.pub
-          echo '{"ocpus": 2, "memoryInGBs": 12}' > ~/shape_config.json
 
       - name: Attempt to Launch Instance
         run: |
@@ -50,10 +49,10 @@ jobs:
             --compartment-id "${{ secrets.OCI_COMPARTMENT_ID }}" \
             --availability-domain "IAD-AD-1" \
             --shape "VM.Standard.A1.Flex" \
-            --shape-config file://~/shape_config.json \
+            --ocpus 2 \
+            --memory-in-gbs 12 \
             --display-name "FreeAlwaysInstance" \
             --image-id "ocid1.image.oc1.iad.aaaaaaaamw65tng73bby6guzw6sh677rebyk66u47y6wge5pnt67m5qshseq" \
             --subnet-id "${{ secrets.OCI_SUBNET_ID }}" \
             --assign-public-ip true \
             --ssh-authorized-keys-file ~/public_key.pub
-

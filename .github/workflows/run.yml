@@ -1,59 +1,43 @@
-name: Execute script
 
-on:
-  push:
-    branches:
-      - main
-  schedule:
-    - cron: '*/5 * * * *'
-
-jobs:
-  run:
-    runs-on: ubuntu-latest
-    name: OCI launch instance
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Install Oracle Cloud CLI
-        run: |
-          mkdir -p ~/.oci
-          echo "Installing OCI CLI via pip..."
-          pip install oci-cli
-          echo "Adding OCI CLI to path..."
-          echo "$HOME/.local/bin" >> $GITHUB_PATH
-
-      - name: Setup OCI Credentials
-        run: |
-          echo "${{ secrets.OCI_PRIVATE_KEY }}" > ~/.oci/oci_api_key.pem
-          chmod 600 ~/.oci/oci_api_key.pem
-          
-          cat <<EOF > ~/.oci/config
-          [DEFAULT]
-          user=${{ secrets.OCI_USER_ID }}
-          fingerprint=${{ secrets.OCI_KEY_FINGERPRINT }}
-          tenancy=${{ secrets.OCI_TENANCY_ID }}
-          region=${{ vars.OCI_REGION }}
-          key_file=~/.oci/oci_api_key.pem
-          EOF
-          
-          chmod 600 ~/.oci/config
-
-      - name: Create Temporary SSH Key File
-        run: |
-          echo "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIDpE7nUvO7u/pU9wI6x8I1oB5N7f6YfB7nUvO7u/pU9w oci-automation-key" > ~/public_key.pub
-
-      - name: Attempt to Launch Instance
-        env:
-          OCI_SHAPE_CONFIG: '{"ocpus":2,"memoryInGBs":12}'
-        run: |
-          export PATH=$PATH:$HOME/.local/bin
-          oci compute instance launch \
-            --compartment-id "${{ secrets.OCI_COMPARTMENT_ID }}" \
-            --availability-domain "IAD-AD-1" \
-            --shape "VM.Standard.A1.Flex" \
-            --display-name "FreeAlwaysInstance" \
-            --image-id "ocid1.image.oc1.iad.aaaaaaaamw65tng73bby6guzw6sh677rebyk66u47y6wge5pnt67m5qshseq" \
-            --subnet-id "${{ secrets.OCI_SUBNET_ID }}" \
-            --assign-public-ip true \
-            --ssh-authorized-keys-file ~/public_key.pub
-
+Repository navigation
+Code
+Pull requests
+Actions
+Projects
+Wiki
+Security and quality
+Insights
+Settings
+Execute script
+Update run.yml #16
+All jobs
+Run details
+Annotations
+1 error, 1 warning, and 1 notice
+OCI launch instance
+failed 2 minutes ago in 58s
+Search logs
+0s
+1s
+51s
+0s
+0s
+2s
+Run export PATH=$PATH:$HOME/.local/bin
+Warning: To increase security of your API key located at /home/runner/.oci/oci_api_key.pem, append an extra line with 'OCI_API_KEY' at the end. For more information, refer to https://docs.oracle.com/iaas/Content/API/Concepts/apisigningkey.htm. To suppress the warning, set the env variable SUPPRESS_LABEL_WARNING=True
+ServiceError:
+{
+    "client_version": "Oracle-PythonSDK/2.190.0, Oracle-PythonCLI/3.96.0",
+    "code": "CannotParseRequest",
+    "logging_tips": "Please run the OCI CLI command using --debug flag to find more debug information.",
+    "message": "Incorrectly formatted request. Please refer to our documentation for help.",
+    "opc-request-id": "3B119C5C258B415583D51958F0501326/6D207B35378AF1A7FEFEEB6A494144A7/B8B2056271798862ABE31042E8E65A31",
+    "operation_name": "launch_instance",
+    "request_endpoint": "POST https://iaas.us-ashburn-1.oraclecloud.com/20160918/instances",
+    "status": 400,
+    "target_service": "compute",
+    "timestamp": "2026-11-05T03:58:54.085021+00:00",
+    "troubleshooting_tips": "See [https://docs.oracle.com/iaas/Content/API/References/apierrors.htm] for more information about resolving this error. If you are unable to resolve this issue, run this CLI command with --debug option and contact Oracle support and provide them the full error message."
+}
+Error: Process completed with exit code 1.
+0s

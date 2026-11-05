@@ -48,7 +48,7 @@ jobs:
           OCI_AVAILABILITY_DOMAIN: ${{ secrets.OCI_AVAILABILITY_DOMAIN }}
           OCI_COMPARTMENT_ID: ${{ secrets.OCI_COMPARTMENT_ID }}
           OCI_SUBNET_ID: ${{ secrets.OCI_SUBNET_ID }}
-          OCI_IMAGE_ID: ${{ secrets.OCI_IMAGE_ID }}
+          OCI_IMAGE_ID: "ocid1.image.oc1.iad.aaaaaaaamw65tng73bby6guzw6sh677rebyk66u47y6wge5pnt67m5qshseq"
           OCI_OCPUS: ${{ vars.OCI_OCPUS }}
           OCI_MEMORY_IN_GBS: ${{ vars.OCI_MEMORY_IN_GBS }}
           OCI_SHAPE: VM.Standard.A1.Flex

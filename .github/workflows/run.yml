@@ -53,3 +53,4 @@ jobs:
           OCI_MEMORY_IN_GBS: ${{ vars.OCI_MEMORY_IN_GBS }}
           OCI_SHAPE: VM.Standard.A1.Flex
           OCI_MAX_INSTANCES: 1
+          OCI_SSH_PUBLIC_KEY: "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQC3 placeholder_key kinggamerexp"

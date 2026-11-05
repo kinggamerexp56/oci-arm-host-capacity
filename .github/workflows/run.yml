@@ -30,6 +30,12 @@ jobs:
       - name: Install dependencies
         run: |
           composer install --prefer-dist --no-progress
+          
+      - name: Generate Private Key File
+        run: |
+          echo "${{ secrets.OCI_PRIVATE_KEY }}" > private_key.pem
+          chmod 600 private_key.pem
+          
       - name: Run script
         run: |
           php index.php
@@ -38,7 +44,7 @@ jobs:
           OCI_USER_ID: ${{ secrets.OCI_USER_ID }}
           OCI_TENANCY_ID: ${{ secrets.OCI_TENANCY_ID }}
           OCI_KEY_FINGERPRINT: ${{ secrets.OCI_KEY_FINGERPRINT }}
-          OCI_PRIVATE_KEY_FILENAME: ${{ secrets.OCI_PRIVATE_KEY }}
+          OCI_PRIVATE_KEY_FILENAME: private_key.pem
           OCI_AVAILABILITY_DOMAIN: ${{ secrets.OCI_AVAILABILITY_DOMAIN }}
           OCI_COMPARTMENT_ID: ${{ secrets.OCI_COMPARTMENT_ID }}
           OCI_SUBNET_ID: ${{ secrets.OCI_SUBNET_ID }}

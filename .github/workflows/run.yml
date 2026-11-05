@@ -13,44 +13,39 @@ jobs:
     name: OCI launch instance
     steps:
       - uses: actions/checkout@v4
-      - name: Install PHP
-        uses: shivammathur/setup-php@v2
-        with:
-          php-version: '8.3'
-      - name: Get Composer Cache Directory
-        id: composer-cache
+
+      - name: Install Oracle Cloud CLI
         run: |
-          echo "dir=$(composer config cache-files-dir)" >> $GITHUB_OUTPUT
-      - uses: actions/cache@v4
-        with:
-          path: ${{ steps.composer-cache.outputs.dir }}
-          key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-composer-
-      - name: Install dependencies
+          bash -c "$(curl -L https://githubusercontent.com)" -- --accept-all-defaults || true
+          mkdir -p ~/.oci
+          echo "Installing OCI CLI via pip..."
+          pip install oci-cli
+
+      - name: Setup OCI Credentials
         run: |
-          composer install --prefer-dist --no-progress
+          echo "${{ secrets.OCI_PRIVATE_KEY }}" > ~/.oci/oci_api_key.pem
+          chmod 600 ~/.oci/oci_api_key.pem
           
-      - name: Generate Private Key File
-        run: |
-          echo "${{ secrets.OCI_PRIVATE_KEY }}" > private_key.pem
-          chmod 600 private_key.pem
+          cat <<EOF > ~/.oci/config
+          [DEFAULT]
+          user=${{ secrets.OCI_USER_ID }}
+          fingerprint=${{ secrets.OCI_KEY_FINGERPRINT }}
+          tenancy=${{ secrets.OCI_TENANCY_ID }}
+          region=${{ vars.OCI_REGION }}
+          key_file=~/.oci/oci_api_key.pem
+          EOF
           
-      - name: Run script
+          chmod 600 ~/.oci/config
+
+      - name: Attempt to Launch Instance
         run: |
-          php index.php
-        env:
-          OCI_REGION: ${{ vars.OCI_REGION }}
-          OCI_USER_ID: ${{ secrets.OCI_USER_ID }}
-          OCI_TENANCY_ID: ${{ secrets.OCI_TENANCY_ID }}
-          OCI_KEY_FINGERPRINT: ${{ secrets.OCI_KEY_FINGERPRINT }}
-          OCI_PRIVATE_KEY_FILENAME: private_key.pem
-          OCI_AVAILABILITY_DOMAIN: "IAD-AD-1"
-          OCI_COMPARTMENT_ID: ${{ secrets.OCI_COMPARTMENT_ID }}
-          OCI_SUBNET_ID: ${{ secrets.OCI_SUBNET_ID }}
-          OCI_IMAGE_ID: "ocid1.image.oc1.iad.aaaaaaaamw65tng73bby6guzw6sh677rebyk66u47y6wge5pnt67m5qshseq"
-          OCI_OCPUS: ${{ vars.OCI_OCPUS }}
-          OCI_MEMORY_IN_GBS: ${{ vars.OCI_MEMORY_IN_GBS }}
-          OCI_SHAPE: VM.Standard.A1.Flex
-          OCI_MAX_INSTANCES: 1
-          OCI_SSH_PUBLIC_KEY: "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIDpE7nUvO7u/pU9wI6x8I1oB5N7f6YfB7nUvO7u/pU9w oci-automation-key"
+          oci compute instance launch \
+            --compartment-id "${{ secrets.OCI_COMPARTMENT_ID }}" \
+            --availability-domain "IAD-AD-1" \
+            --shape "VM.Standard.A1.Flex" \
+            --shape-config '{"ocpus":2,"memoryInGBs":12}' \
+            --display-name "FreeAlwaysInstance" \
+            --image-id "ocid1.image.oc1.iad.aaaaaaaamw65tng73bby6guzw6sh677rebyk66u47y6wge5pnt67m5qshseq" \
+            --subnet-id "${{ secrets.OCI_SUBNET_ID }}" \
+            --assign-public-ip true \
+            --ssh-authorized-keys "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIDpE7nUvO7u/pU9wI6x8I1oB5N7f6YfB7nUvO7u/pU9w oci-automation-key"
